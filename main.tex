@@ -198,7 +198,32 @@ GHC можно разделить на три сущности:
 \newpage
 \subsection{Генерация экземпляров классов Applicative и Functor}
 \subsubsection{Подключение модулей}
-Сначала убедимся, что 
+Сначала убедимся, что подключены модули:
+    \begin{itemize}
+        \item \lstinline{Data.Functor}, содержащий реализацию класса \textit{Functor};
+        \item \lstinline{Control.Applicative}, содержащий реализацию класса \textit{Applicative}.
+    \end{itemize}
+
+\begin{enumerate}
+\item Выберем все подключения (\textit{imports}). Для этого возьмём ветвь \textit{hsmodImports}. Каждое подключение описывается типом данных \textit{ImportDecl} (см. рис.~\ref{import}).
+\item Рассмотрим конструктор типа данных \textit{ImportDecl}. Нас интересует поле \textit{ideclName}~--- это имя импортируемого модуля. Преобразуем имена импортируемых модулей к строкам и проверим, есть ли среди них значения \textit{<<Data.Functor>>} либо \textit{<<Control.Applicative>>}.
+\item Если интересующие нас имена модулей не найдены, то их импорты необходимо добавить. 
+\end{enumerate}
+
+\begin{figure}[h]
+\begin{tikzpicture}[%
+  grow via three points={one child at (0.5,-0.7) and
+  two children at (0.5,-0.7) and (0.5,-1.4)},
+  edge from parent path={(\tikzparentnode.south) |- (\tikzchildnode.west)}]
+  \node {ImportDecl}
+    child { node {ideclName}}
+    child { node {ideclPkgQual}}
+    child { node {ideclQualified}}
+    child { node {ideclImplicit}}
+    child { node {$\ldots$}};
+      \end{tikzpicture}
+\caption{Структура данных для import'а}\label{import}
+\end{figure}
 
 \subsection{Формирование выходного файла}
 \subsection{Другие способы решения}
