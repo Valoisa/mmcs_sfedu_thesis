@@ -149,16 +149,11 @@ GHC можно разделить на три сущности:
     \end{itemize}
 \item С помощью сопоставления с образцом (\textit{pattern-matching}) выберем только объявления экземпляров. Они имеют тип данных \textit{InstDecl}. У типа данных \textit{InstDecl} также имеется несколько конструкторов:
     \begin{itemize}
-        \item \begin{lstlisting}
-  ClsInstD {cid_inst :: ClsInstDecl name}
-              \end{lstlisting}
+        \item \lstinline!ClsInstD {cid_inst :: ClsInstDecl name}!
         \item 
-        \begin{lstlisting}
-  DataFamInstD {dfid_inst :: DataFamInstDecl name} 
-        \end{lstlisting}
-        \item \begin{lstlisting}
-  TyFamInstD {tfid_inst :: TyFamInstDecl name}
-              \end{lstlisting}
+        \lstinline!DataFamInstD {dfid_inst :: DataFamInstDecl name}! 
+        
+        \item \lstinline!TyFamInstD {tfid_inst :: TyFamInstDecl name}!
     \end{itemize}
 \item Снова применяя сопоставление с образцом, выберем только те объекты типа данных \textit{InstDecl}, которые были созданы с помощью конструктора \textit{ClsInstDecl}~--- это и есть экземпляры классов типов.
 \item Теперь необходимо выбрать только экземпляры класса \textit{Monad}. Обратимся к конструктору типа данных \textit{ClsInstDecl}. Первое поле этого конструктора \lstinline{cid_poly_ty} определяет, экземпляр какого класса описан. Опишем предикат, который определяет, что это действительно экземпляр класса \textit{Monad}. Наконец, с помощью функции \textbf{filter} из модуля \textit{Data.List} отфильтруем экземпляры из списка, полученного в пункте 3, удовлетворяющие предикату.
@@ -208,7 +203,7 @@ GHC можно разделить на три сущности:
 \begin{enumerate}
 \item Выберем все подключения (\textit{imports}). Для этого возьмём ветвь \textit{hsmodImports}. Каждое подключение описывается типом данных \textit{ImportDecl} (см. рис.~\ref{import}).
 \item Рассмотрим конструктор типа данных \textit{ImportDecl}. Нас интересует поле \textit{ideclName}~--- это имя импортируемого модуля. Преобразуем имена импортируемых модулей к строкам и проверим, есть ли среди них значения \textit{<<Data.Functor>>} либо \textit{<<Control.Applicative>>}.
-\item Если интересующие нас имена модулей не найдены, то их импорты необходимо добавить~\autocite{wikiGHC}.
+\item Если интересующие нас имена модулей не найдены, то их импорты необходимо добавить.
 \end{enumerate}
 
 \begin{figure}[h]
