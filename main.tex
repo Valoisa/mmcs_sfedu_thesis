@@ -475,7 +475,7 @@ mkInstance insthead funs = ClsInstDecl {
 \caption{Формирование узла с экземпляром}\label{mkinst}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}
 \hrulefill
 \begin{lstlisting}
 mkCIDBindsForInstAppl :: [HsBindLR RdrName RdrName]
@@ -501,7 +501,7 @@ mkCIDBindsForInstAppl monret mongr = listToBag
 \caption{Формирование поля cid\_binds для Applicative}\label{cidbindsappl}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}
 \hrulefill
 \begin{lstlisting}
 mkCIDBindsForInstFunc :: LHsBinds RdrName
@@ -518,7 +518,7 @@ mkCIDBindsForInstFunc = listToBag
 
 Опишем основную функцию (\lstinline{main}) (см. рис.~\ref{main}). Она работает следующим образом: принимает имя файла в качестве аргумента командной строки, проводит его синтаксический анализ, применяет к нему функцию \lstinline{appendAllInstances} (является композицией вышеописанных функций), затем печатает в результат в этот же файл.
 
-\begin{figure}[h]
+\begin{figure}
 \hrulefill
 \begin{lstlisting}
 main :: IO ()
@@ -532,66 +532,110 @@ main = do
                 $ showSDocUnsafe $ ppr mdl
 \end{lstlisting}
 \hrulefill
-\caption{Формирование поля cid\_binds для Functor}\label{main}
+\caption{Основная функция (main)}\label{main}
 \end{figure}
 %$
 
 \newpage
 \section{Результаты работы программы}
-Подадим на вход утилите тестовый файл \textit{Test.hs} и проанализируем результаты. Данный файл содержит несколько примеров экземпляра класса \textit{Monad}, один из которых <<пустой>> (т.е. содержит только заголовок), другой же представляет из себя стандартный экземпляр, у которого уже имеется соответствующий ему экземпляр класса \textit{Functor}.
+Подадим на вход утилите тестовый файл \textit{Test.hs} и проанализируем результаты. Данный файл содержит несколько примеров экземпляра класса \textit{Monad}.
 
+Рассмотрим первый пример: <<пустой>> экземпляр класса \textit{Monad}, т.~е. содержащий только заголовок.
+\begin{figure}[H]
+\begin{parcolumns}{2}
+\colchunk[1]{\textbf{Исходные данные:}}
+\colchunk[2]{\textbf{Результат:}}
+\end{parcolumns}
 
-
-\textbf{Исходные данные:}
+\begin{minipage}{.45\textwidth}
 \begin{lstlisting}
 data MyData a = MyData a
 
 instance Monad MyData
-
-newtype Prob a = Prob { getProb :: [(a,Rational)] } deriving Show
-
-instance Functor Prob where  
-    fmap f (Prob xs) = Prob $ map (\(x,p) -> (f x,p)) xs 
- 
-flatten :: Prob (Prob a) -> Prob a  
-flatten (Prob xs) = Prob $ concat $ map multAll xs  
-    where multAll (Prob innerxs,p) = map (\(x,r) -> (x,p*r)) innerxs
-
-instance Monad Prob where  
-    return x = Prob [(x,1%1)]  
-    m >>= f = flatten (fmap f m)
 \end{lstlisting}
-%$
-\textbf{Результат работы утилиты:}
+\end{minipage}
+\begin{minipage}{.45\textwidth}
 \begin{lstlisting}
 data MyData a = MyData a
-newtype Prob a
-  = Prob {getProb :: [(a, Rational)]}
-  deriving (Show)
-instance Functor Prob where
-  fmap f (Prob xs) = Prob $ map (\ (x, p) -> (f x, p)) xs
-flatten :: Prob (Prob a) -> Prob a
-flatten (Prob xs)
-  = Prob $ concat $ map multAll xs
-  where
-      multAll (Prob innerxs, p) = map (\ (x, r) -> (x, p * r)) innerxs
+
 instance Applicative MyData where
-  (<*>) = ap
-instance Applicative Prob where
-  pure x = Prob [(x, 1 % 1)]
-  (<*>) = ap
+  (<*>) = ap  
 instance Functor MyData where
-  fmap = liftM
+  fmap = liftM  
 instance Monad MyData where
   return = pure
   (>>) = (*>)
+\end{lstlisting}
+\end{minipage}
+\end{figure}
+Результаты соответствуют ожидаемым: программой были добавлены экземпляры классов \textit{Functor} и \textit{Applicative}. Реализация фукнций \lstinline{pure} и \lstinline{*>} отсутствует, поскольку в экземпляре монады соответствующие индентично работающие фукнции реализованы не были.
+
+Теперь рассмотрим пример, содержащий экземпляр класса \textit{Monad} с реализованными в нём функциями \lstinline{retrun} и \lstinline{>>=}. Кроме того, в исходном файле уже присутствовал экземпляр класса \textit{Functor}, в котором была определена функция \lstinline{fmap}.
+\begin{figure}[!h]
+\begin{parcolumns}{2}
+\colchunk[1]{\textbf{Исходные данные:}}
+\colchunk[2]{\textbf{Результат:}}
+\end{parcolumns}
+
+\begin{minipage}{.45\textwidth}
+\begin{lstlisting}
+newtype Prob a = Prob { 
+        getProb :: [(a,Rational)] 
+        } deriving Show
+
+instance Functor Prob where  
+    fmap f (Prob xs) = Prob 
+            $ map (\(x,p) 
+                -> (f x,p)) xs
+
+flatten :: Prob (Prob a) -> Prob a  
+flatten (Prob xs) = 
+        Prob $ concat 
+             $ map multAll xs  
+    where 
+        multAll (Prob innerxs,p) = 
+          map (\(x,r) 
+             -> (x,p*r)) innerxs
+
+instance Monad Prob where  
+  return x = Prob [(x,1%1)]  
+  m >>= f 
+    = flatten (fmap f m)
+\end{lstlisting}
+%$
+\end{minipage}
+\begin{minipage}{.45\textwidth}
+\begin{lstlisting}
+newtype Prob a = Prob {
+  getProb :: [(a, Rational)]
+  } deriving (Show)
+
+instance Functor Prob where
+  fmap f (Prob xs) = Prob 
+        $ map (\ (x, p) 
+            -> (f x, p)) xs
+flatten :: Prob (Prob a) -> Prob a
+flatten (Prob xs)
+  = Prob $ concat 
+         $ map multAll xs
+  where
+      multAll (Prob innerxs, p) 
+        = map (\ (x, r) 
+            -> (x, p * r)) innerxs
+
+instance Applicative Prob where
+  pure x = Prob [(x, 1 % 1)]
+  (<*>) = ap
+
 instance Monad Prob where
   return = pure
   (>>) = (*>)
-  m >>= f = flatten (fmap f m)
+  m >>= f 
+    = flatten (fmap f m)
 \end{lstlisting}
 %$
-
+\end{minipage}
+\end{figure}
 \Conc
 В ходе работы над задачей было получено решение с применением библиотеки GHC API~--- программного интерфейса компилятора. Проанализировав результаты, можно прийти к следующим выводам.
 \subsection*{Достоинства}

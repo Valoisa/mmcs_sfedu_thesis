@@ -41,7 +41,6 @@
 
 %%% Заголовки
 
-
 \ifthenelse{{\value{worktype} > 1}}{%
   \KOMAoptions{%
       headings=normal,   % размеры заголовков поменьше стандартных
@@ -50,8 +49,8 @@
   }
 }{% Печатать слово Приложение даже если нет глав
   \newcommand*{\appendixmore}{%
-    \renewcommand*{\sectionformat}{%
-    \appendixname~\thesection\autodot\enskip}
+%    \renewcommand*{\sectionformat}{%
+%       \appendixname~\thesection\autodot\enskip}
     \renewcommand*{\sectionmarkformat}{%
       \appendixname~\thesection\autodot\enskip}
   }
