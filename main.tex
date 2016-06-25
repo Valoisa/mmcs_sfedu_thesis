@@ -191,7 +191,7 @@ GHC можно разделить на три сущности:
 \caption{Экземпляры классов в синтаксическом дереве}\label{filter}
 \end{figure}
 
-\subsection{Генерация экземпляров классов Applicative и Functor}
+\subsection{Генерация экземпляров классов Applicative и Functor}\label{generation}
 \subsubsection{Подключение модулей}
 Сначала убедимся, что подключены стандартные модули, содержащие реализацию:
     \begin{enumerate}[1)]
@@ -475,66 +475,11 @@ mkInstance insthead funs = ClsInstDecl {
 \caption{Формирование узла с экземпляром}\label{mkinst}
 \end{figure}
 
-\begin{figure}
-\hrulefill
-\begin{lstlisting}
-mkCIDBindsForInstAppl :: [HsBindLR RdrName RdrName]
-                -> [HsBindLR RdrName RdrName] -> LHsBinds RdrName
-mkCIDBindsForInstAppl [] [] = listToBag 
-                    [ noLoc (mkFunBind (mkFunId "(<*>)") ([mkLMatch [] 
-                                                $ mkGRHSs "ap"])) ]
-mkCIDBindsForInstAppl [] mongr = listToBag
-                    [ noLoc (mkFunBind (mkFunId "(<*>)") ([mkLMatch [] 
-                                                $ mkGRHSs "ap"]))
-                    , noLoc (mkFunBindForAppl "*>" (head mongr) True) ]
-mkCIDBindsForInstAppl monret [] = listToBag
-                    [ noLoc (mkFunBindForAppl "pure" (head monret) False)
-                    , noLoc (mkFunBind (mkFunId "(<*>)") ([mkLMatch [] 
-                                                $ mkGRHSs "ap"])) ]
-mkCIDBindsForInstAppl monret mongr = listToBag
-                    [ noLoc (mkFunBindForAppl "pure" (head monret) False)
-                    , noLoc (mkFunBind (mkFunId "(<*>)") ([mkLMatch [] 
-                                                $ mkGRHSs "ap"]))
-                    , noLoc (mkFunBindForAppl "*>" (head mongr) True) ]
-\end{lstlisting}
-\hrulefill
-\caption{Формирование поля cid\_binds для Applicative}\label{cidbindsappl}
-\end{figure}
-
-\begin{figure}
-\hrulefill
-\begin{lstlisting}
-mkCIDBindsForInstFunc :: LHsBinds RdrName
-mkCIDBindsForInstFunc = listToBag
-                    [ noLoc (mkFunBind (mkFunId "fmap") ([mkLMatch [] 
-                                                $ mkGRHSs "liftM"])) ]
-\end{lstlisting}
-\hrulefill
-\caption{Формирование поля cid\_binds для Functor}\label{cidbindsfunc}
-\end{figure}
-%$
 \subsection{Формирование выходного файла}
 Сформировав новое синтаксическое дерево, применим к нему функцию структурной печати \lstinline{ppr}, которая находится в модуле \textit{Outputable} библиотеки GHC API (см. главу~\ref{ghcapi}). Данная функция принимает объект, тип данных которого имеет экземпляр класса \textit{Outputable} и возвращает объект типа данных \textit{SDoc}. Последний, в свою очередь, преобразовывается к строке с помощью специальных функций, например, \textit{showSDoc}, \textit{showSDocUnsafe} и других.
 
 Опишем основную функцию (\lstinline{main}) (см. рис.~\ref{main}). Она работает следующим образом: принимает имя файла в качестве аргумента командной строки, проводит его синтаксический анализ, применяет к нему функцию \lstinline{appendAllInstances} (является композицией вышеописанных функций), затем печатает в результат в этот же файл.
 
-\begin{figure}
-\hrulefill
-\begin{lstlisting}
-main :: IO ()
-main = do
-    dynFl <- GHC.runGhc (Just libdir) GHC.getSessionDynFlags
-    [file] <- getArgs
-    mp <- appendAllInstances $ parseHaskell file
-    case mp of
-        Nothing  -> putStrLn "Parse failed"
-        Just mdl -> writeFile "a.hs" 
-                $ showSDocUnsafe $ ppr mdl
-\end{lstlisting}
-\hrulefill
-\caption{Основная функция (main)}\label{main}
-\end{figure}
-%$
 
 \newpage
 \section{Результаты работы программы}
@@ -636,6 +581,75 @@ instance Monad Prob where
 %$
 \end{minipage}
 \end{figure}
+
+Результаты соответствуют ожидаемым:
+\begin{enumerate}[1)]
+\item <<лишний>> экземпляр класса \textit{Functor} не появился;
+\item экземпляр класса \textit{Applicative} был сгенерирован в соответствии с требованиями (см. главу~\ref{generation});
+\item экземпляр класс \textit{Monad} был изменён нужным образом;
+\item изменения не затронули код, не относящийся к проблеме.
+\end{enumerate}
+
+\begin{figure}
+\hrulefill
+\begin{lstlisting}
+mkCIDBindsForInstAppl :: [HsBindLR RdrName RdrName]
+                -> [HsBindLR RdrName RdrName] -> LHsBinds RdrName
+mkCIDBindsForInstAppl [] [] = listToBag 
+           [ noLoc (mkFunBind (mkFunId "(<*>)") 
+                        ([mkLMatch [] $ mkGRHSs "ap"])) ]
+                        
+mkCIDBindsForInstAppl [] mongr = listToBag
+           [ noLoc (mkFunBind (mkFunId "(<*>)") 
+                        ([mkLMatch [] $ mkGRHSs "ap"]))
+           , noLoc (mkFunBindForAppl "*>" (head mongr) True) ]
+           
+mkCIDBindsForInstAppl monret [] = listToBag
+           [ noLoc (mkFunBindForAppl "pure" (head monret) False)
+           , noLoc (mkFunBind (mkFunId "(<*>)") 
+                         ([mkLMatch [] $ mkGRHSs "ap"])) ]
+                         
+mkCIDBindsForInstAppl monret mongr = listToBag
+           [ noLoc (mkFunBindForAppl "pure" (head monret) False)
+           , noLoc (mkFunBind (mkFunId "(<*>)") 
+                         ([mkLMatch [] $ mkGRHSs "ap"]))
+           , noLoc (mkFunBindForAppl "*>" (head mongr) True) ]
+\end{lstlisting}
+\hrulefill
+\caption{Формирование поля cid\_binds для Applicative}\label{cidbindsappl}
+\end{figure}
+
+\begin{figure}
+\hrulefill
+\begin{lstlisting}
+mkCIDBindsForInstFunc :: LHsBinds RdrName
+mkCIDBindsForInstFunc = listToBag
+    [ noLoc (mkFunBind (mkFunId "fmap") 
+                          ([mkLMatch [] $ mkGRHSs "liftM"])) ]
+\end{lstlisting}
+\hrulefill
+\caption{Формирование поля cid\_binds для Functor}\label{cidbindsfunc}
+\end{figure}
+%$
+
+\begin{figure}
+\hrulefill
+\begin{lstlisting}
+main :: IO ()
+main = do
+    dynFl <- GHC.runGhc (Just libdir) GHC.getSessionDynFlags
+    [file] <- getArgs
+    mp <- appendAllInstances $ parseHaskell file
+    case mp of
+        Nothing  -> putStrLn "Parse failed"
+        Just mdl -> writeFile "a.hs" 
+                $ showSDocUnsafe $ ppr mdl
+\end{lstlisting}
+\hrulefill
+\caption{Основная функция (main)}\label{main}
+\end{figure}
+%$
+
 \Conc
 В ходе работы над задачей было получено решение с применением библиотеки GHC API~--- программного интерфейса компилятора. Проанализировав результаты, можно прийти к следующим выводам.
 \subsection*{Достоинства}
