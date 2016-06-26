@@ -188,9 +188,9 @@ instance Applicative MyData
 
 \newpage
 \section{Решение}
-\subsection{Получить синтаксическое дерево}
+\subsection{Синтаксическое дерево}
 Для начала необходимо провести синтаксический анализ (\textit{parsing}) файла с исходным кодом и получить дерево разбора (синтаксическое дерево).
-Для этого опишем функцию, которая принимает имя файла с исходным кодом и возвращает объект типа данных \textit{HsModule} (структура верхнего уровня для модуля). Схематично \textit{HsModule} представлен на рис.~\ref{hsmod}. 
+Для этого нужно описать функцию, которая принимает имя файла с исходным кодом и возвращает объект типа данных \textit{HsModule} (структура верхнего уровня для модуля). Схематично \textit{HsModule} представлен на рис.~\ref{hsmod}. 
 \begin{figure}[h]
 \begin{tikzpicture}[%
   grow via three points={one child at (0.5,-0.7) and
@@ -216,7 +216,7 @@ instance Applicative MyData
 \caption{Структура верхнего уровня HsModule}\label{hsmod}
 \end{figure}
 
-\subsection{Отфильтровать экземпляры класса Monad}\label{filtermonad}
+\subsection{Алгоритм выбора экземпляров класса Monad}\label{filtermonad}
 Далее получим экземпляры класса \textit{Monad}. Необходимо отфильтровать только те экземпляры, для которых нет соответствующих им экземпляров класса \textit{Applicative}  и/или \textit{Functor}.
 \begin{enumerate}
 \item Выберем все объявления. Для этого оставим только ветвь \textit{hsmodDecls} (см. рис.~\ref{filter}).
@@ -275,7 +275,7 @@ instance Applicative MyData
 \caption{Экземпляры классов в синтаксическом дереве}\label{filter}
 \end{figure}
 
-\subsection{Генерация экземпляров классов Applicative и Functor}\label{generation}
+\subsection{Алгоритм генерации экземпляров классов Applicative и Functor}\label{generation}
 \subsubsection{Подключение модулей}
 Сначала убедимся, что подключены стандартные модули, содержащие реализацию:
     \begin{enumerate}[1)]
@@ -347,7 +347,7 @@ instance Applicative MyData
 \caption{Структура данных для экземпляра класса}\label{instance}
 \end{figure}
 
-\subsection{Формирование выходного файла}
+\subsection{Алгоритм формирование выходного файла}
 Наконец, необходимо сформировать новое синтаксическое дерево, по которому затем сгенерировать уже работоспособный код.
 \begin{enumerate}[1.]
     \item Заменим ветви \textit{hsmodImports} и \textit{hsmodDecls} (рис.~\ref{hsmod}) ветвями, полученными в предыдущих пунктах.
