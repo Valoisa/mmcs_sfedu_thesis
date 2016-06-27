@@ -1,5 +1,5 @@
 % В этом файле следует писать текст работы, разбивая его на
-% разделы (section), подразделы (subsection) и, если нужно,
+% разделы (section), подразделы (section) и, если нужно,
 % главы (chapter).
 
 % Предварительно следует указать необходимую информацию
@@ -20,12 +20,12 @@
 
 Функциональные языки имеют множество неоспоримых достоинств, таких как: повышенная надёжность кода, удобство организации модульного тестирования, возможности оптимизации при компиляции, возможности автоматического распараллеливания вычислений. Поэтому в последнее время языки функционального программирования стремительно развиваются. Одним из наиболее популярных функциональных языков является \textit{Haskell}~---  язык программирования общего назначения, имеющий полную, сильную, статическую систему типов.
 
-\subsection*{Цель работы}
+\section*{Цель работы}
 Одной из идиом языка программирования \textit{Haskell} являются так называемые \textit{классы типов}. Классы типов в некотором смысле схожи с интерфейсами  объектно-ориентированных языках. В частности, классы типов также реализуют наследование, при котором наследник уточняет функционал предка. Однако класс \textit{Monad}, по смыслу наследовавший класс \textit{Applicative}, синтаксически оставался самостоятельным классом.
 
 В марте 2015 года вышла новая версия компилятора: GHC 7.10. В этой версии было реализовано предложение, известное как \textit{The Applicative Monad Proposal}~\autocite{AMP}. Суть этого предложения заключается в том, чтобы сделать класс \textit{Monad} подклассом класса \textit{Applicative}, в результате чего получается следующая цепочка наследования: \textit{Functor~--- Applicative~--- Monad}. Теперь, описывая экземпляры класса \textit{Monad}, необходимо также создавать экземпляры классов \textit{Functor} и \textit{Applicative}. В версия GHC, младших, чем 7.10 \textit{Monad} был самостоятельным классом, поэтому для получения работоспособного кода в этих экземплярах не было необходимости. Таким образом, в результате этих изменений, часть программ, компилирующихся версиями GHC, младше, чем 7.10, перестали компилироваться версией GHC 7.10.
 
-\subsection*{Постановка задачи}
+\section*{Постановка задачи}
 Дописывать необходимые экземпляры вручную непрактично, особенно в случае больших объёмов кода. Поэтому требуется создать программное средство, которое восстановит компилируемость этих программ.
 
 Было принято решение создать утилиту с помощью средств самого языка Haskell, а именно при помощи библиотеки \textit{GHC API} --- программного интерфейса компилятора GHC. Утилита должна работать следующим образом:
@@ -40,10 +40,10 @@
 % Если typeOfWork в SETUP.tex задан как 2 или 3, то начинать
 % надо не с section (раздел), а с главы (chapter)
 \newpage
-\section{Предварительные сведения}
+\chapter{Предварительные сведения}
 \label{sec:prelim}
 
-\subsection{GHC: создание, развитие, архитектура}
+\section{GHC: создание, развитие, архитектура}
 \textbf{Glasgow Haskell Compiler (GHC)}~--- один из наиболее развитых на сегодняшний день компилятор языка Haskell. Является кроссплатформенным компилятором с открытым исходным кодом. С момента своего создания компилятор постоянно совершенствуется. Сначала GHC был частью академического исследовательского проекта, который спонсировался правительством Великобритании в начале 1990-х годов. Создатели GHC преследовали несколько целей:
 \begin{enumerate}[1)]
 \item создать широкодоступный, надёжный компилятор языка \textit{Haskell}, генерирующий высокопроизводительный код;
@@ -69,7 +69,7 @@ GHC можно разделить на три сущности:
 %Внешний интерфейс (front end) GHC (включающий лексический анализатор (lexer), синтаксический анализатор (parser) и верификатор типов (typechecker)) устроен таким образом, чтобы (<слишком сложно, не могу перевести, да и надо ли об этом говорить... Но если не об этом, то о чём тогда?!>)
 
 
-\subsection{GHC~7.8~--- GHC~7.10}\label{710}
+\section{GHC~7.8~--- GHC~7.10}\label{710}
 Как уже было сказано, GHC~--- один из наиболее развитых компиляторов языка \textit{Haskell} на сегодняшний день. Обновления для GHC выходят регулярно. К сожалению, иногда выход обновлений приводит к определённым проблемам, как, например, потеря обратной совместимости. В данной работе решается проблема обратной совместимости версий GHC 7.10 и версий, младше 7.10.
 
 Так, одним из изменений, появившихся в GHC~7.10, отличающих его от GHC~7.8 стала реализация предложения, известного как \textit{Applicative Monad Proposal} (\textit{AMP}). Суть его состоит в том, чтобы сделать класс \textit{Applicative} надклассом класса \textit{Monad} (и в дополнение класса \textit{MonadPlus})~\autocite{AMP}.
@@ -89,7 +89,7 @@ GHC можно разделить на три сущности:
 %\caption{Реализация класа Monad в GHC 7.8 (библиотека base версии 4.7.0.2).}\label{oldmonad}
 %\end{figure}
 
-\subsection{GHC API~--- программный интерфейс компилятора}\label{ghcapi}
+\section{GHC API~--- программный интерфейс компилятора}\label{ghcapi}
 Функционал GHC может быть использован не только для компиляции программ на языке Haskell. Важным примером использования может послужить анализ и, возможно, преобразование кода на языке Haskell. Другим примером является динамическая загрузка кода, как в GHCi~\autocite{GHClib}. Для этих целей функционал GHC доступен через библиотеку GHC~API.
 
 Рассмотрим основные модули этой библиотеки, функционал которых применялся в данной работе.
@@ -105,11 +105,11 @@ GHC можно разделить на три сущности:
 
 Более подробно см. документацию по GHC~API~\autocite{apidoc}.
 
-\subsection{Экземпляр-сирота (orphan instance)}
+\section{Экземпляр-сирота (orphan instance)}
 При решении поставленной задачи необходимо будет убедиться, что у экземпляра класса \textit{Monad} отсутствуют уже описанные соответствующие ему экземпляры классов \textit{Applicative} и \textit{Functor}. Однако в многомодульных проектах может возникнуть ситуация, при которой экземпляры разных классов оказались в разных модулях. Если экземпляр класса типов \textit{C} для типа \textit{T} описан в модуле, в котором не описан ни класс \textit{C}, ни класс \textit{T}, то он называется \textit{экземпляр-сирота} (\textit{orphan instance})~\autocite{orphinst}. 
 
-Проверим, в каком случае наличие такого экземпляра возможно в условиях поставленной задачи. Для этого создадим два простейших модуля: \textit{Moduleone.hs} (см. рис.~\ref{one}) и \textit{Moduletwo.hs} (см. рис.~\ref{two}) в первом (\textit{Moduleone.hs}) из них опишем свой тип данных \textit{MyData} и экземпляр класса \textit{Monad} для него. В другом (\textit{Moduletwo.hs}) создадим экземпляры классов \textit{Functor} и \textit{Applicative} для \textit{MyData} и подключим в нём \textit{Moduleone} с описанием \textit{MyData}.
-\begin{figure}[h]
+Проверим, в каком случае наличие такого экземпляра возможно в условиях поставленной задачи. Для этого создадим два простейших модуля: \textit{Moduleone.hs} (см. листинг~\ref{one}) и \textit{Moduletwo.hs} (см. листинг~\ref{two}) в первом (\textit{Moduleone.hs}) из них опишем свой тип данных \textit{MyData} и экземпляр класса \textit{Monad} для него. В другом (\textit{Moduletwo.hs}) создадим экземпляры классов \textit{Functor} и \textit{Applicative} для \textit{MyData} и подключим в нём \textit{Moduleone} с описанием \textit{MyData}.
+\begin{ListingEnv}[b]
 \begin{lstlisting}
 module Moduleone where
 
@@ -119,9 +119,9 @@ data MyData a = MyData a
 instance Monad MyData
 \end{lstlisting}
 \caption{Реализация модуля Moduleone.hs}\label{one}
-\end{figure}
+\end{ListingEnv}
 
-\begin{figure}[h]
+\begin{ListingEnv}[h]
 \begin{lstlisting}
 module Moduletwo where
 
@@ -133,10 +133,10 @@ instance Functor MyData
 instance Applicative MyData
 \end{lstlisting}
 \caption{Реализация модуля Moduletwo.hs}\label{two}
-\end{figure}
+\end{ListingEnv}
 
 При попытке скомпилировать \textit{Moduletwo.hs} мы получаем сообщение:
-\begin{figure}[h]
+\begin{figure}[H]
 \begin{verbatim}
 $ ghc Moduletwo.hs
 [1 of 2] Compiling Moduleone  
@@ -152,9 +152,9 @@ Moduleone.hs:7:10:
 
 Это означает, что компиляция \textit{Moduleone.hs} не удалась, поскольку в нём присутствует экземпляр класса \textit{Monad}, но отсутствует требуемый экземпляр класса \textit{Applicative}.
 
-Рассмотрим другой вариант. Теперь в \textit{Moduletwo.hs} опишем тип данных \textit{MyData} и определим для него экземпляры классво \textit{Applicative} и \textit{Functor} (см. рис.~\ref{two2}). В модуле \textit{Moduleone.hs} определим экземпляр класса \textit{Monad} и подключим \textit{Moduletwo.hs} (см. рис.~\ref{one2}). Компиляция в этом случае пройдёт успешно. 
+Рассмотрим другой вариант. Теперь в \textit{Moduletwo.hs} опишем тип данных \textit{MyData} и определим для него экземпляры классво \textit{Applicative} и \textit{Functor} (см. листинг~\ref{two2}). В модуле \textit{Moduleone.hs} определим экземпляр класса \textit{Monad} и подключим \textit{Moduletwo.hs} (см. листинг~\ref{one2}). Компиляция в этом случае пройдёт успешно. 
 
-\begin{figure}[h]
+\begin{ListingEnv}[t]
 \begin{lstlisting}
 module Moduleone where
 
@@ -164,9 +164,9 @@ import Moduletwo
 instance Monad MyData
 \end{lstlisting}
 \caption{Реализация модуля Moduleone.hs}\label{one2}
-\end{figure}
+\end{ListingEnv}
 
-\begin{figure}[h]
+\begin{ListingEnv}[b]
 \begin{lstlisting}
 module Moduletwo where
 
@@ -179,15 +179,15 @@ instance Functor MyData
 instance Applicative MyData
 \end{lstlisting}
 \caption{Реализация модуля Moduletwo.hs}\label{two2}
-\end{figure}
+\end{ListingEnv}
 
 Таким образом, в условиях поставленной задачи может возникнуть ситуация, когда экземпляр класса \textit{Monad} описан в одном модуле, а экземпляры классов \textit{Applicative} и \textit{Functor} (а также и сам тип данных)~--- в другом. Тем не менее, экземпляров-сирот лучше избегать. Поскольку у экземпляров классов типов нет идентификаторов, их нельзя явно исключить: все экземпляры, описанные в некотором модуле импортируются при подключении этого модуля. Поэтому можно описать несколько разных экземпляров одного и того же класса, которые находятся в разных модулях. Однако если в области видимости имеется несколько экземпляров одного и того же класса для одного и того же типа данных, компилятор не может решить, какой из них использовать. Экземпляры, не являющиеся сиротами, позволяют избегать определения множественных экземпляров.
 
 Итак, при решении задачи мы будем рассматривать случай, когда тип данных и экземпляр класса \textit{Monad} для него описаны в одном модуле, т.~е. когда экземпляров-сирот возникнуть не может.
 
 \newpage
-\section{Решение}
-\subsection{Синтаксическое дерево}
+\chapter{Основные алгоритмы}
+\section{Синтаксическое дерево}
 Для начала необходимо провести синтаксический анализ (\textit{parsing}) файла с исходным кодом и получить дерево разбора (синтаксическое дерево).
 Для этого нужно описать функцию, которая принимает имя файла с исходным кодом и возвращает объект типа данных \textit{HsModule} (структура верхнего уровня для модуля). Схематично \textit{HsModule} представлен на рис.~\ref{hsmod}. 
 \begin{figure}[h]
@@ -215,7 +215,7 @@ instance Applicative MyData
 \caption{Структура верхнего уровня HsModule}\label{hsmod}
 \end{figure}
 
-\subsection{Алгоритм выбора экземпляров класса Monad}\label{filtermonad}
+\section{Алгоритм выбора экземпляров класса Monad}\label{filtermonad}
 Далее получим экземпляры класса \textit{Monad}. Необходимо отфильтровать только те экземпляры, для которых нет соответствующих им экземпляров класса \textit{Applicative}  и/или \textit{Functor}.
 \begin{enumerate}
 \item Выберем все объявления. Для этого оставим только ветвь \textit{hsmodDecls} (см. рис.~\ref{filter}).
@@ -274,8 +274,8 @@ instance Applicative MyData
 \caption{Экземпляры классов в синтаксическом дереве}\label{filter}
 \end{figure}
 
-\subsection{Алгоритм генерации экземпляров классов Applicative и Functor}\label{generation}
-\subsubsection{Подключение модулей}
+\section{Алгоритм генерации экземпляров классов Applicative и Functor}\label{generation}
+\subsection{Подключение модулей}
 Сначала убедимся, что подключены стандартные модули, содержащие реализацию:
     \begin{enumerate}[1)]
         \item класса Functor;
@@ -303,7 +303,7 @@ instance Applicative MyData
 \caption{Структура данных для импорта}\label{import}
 \end{figure}
 
-\subsubsection{Непосредственно генерация экземпляров}\label{instgen}
+\subsection{Непосредственно генерация экземпляров}\label{instgen}
 Необходимые экземпляры будем генерировать в соответствии с рекомендациями на \textit{GHC Developer Wiki}~\autocite{migrat}.
 \begin{description}
 \item[Экземпляр класса Applicative.] Для каждого экземпляра класса \textit{Monad} создадим объект типа \textit{ClsInstDecl} по следующему правилу.
@@ -346,7 +346,7 @@ instance Applicative MyData
 \caption{Структура данных для экземпляра класса}\label{instance}
 \end{figure}
 
-\subsection{Алгоритм формирование выходного файла}
+\section{Алгоритм формирование выходного файла}
 Наконец, необходимо сформировать новое синтаксическое дерево, по которому затем сгенерировать уже работоспособный код.
 \begin{enumerate}[1.]
     \item Заменим ветви \textit{hsmodImports} и \textit{hsmodDecls} (рис.~\ref{hsmod}) ветвями, полученными в предыдущих пунктах.
@@ -354,14 +354,14 @@ instance Applicative MyData
     \item Новый код перезапишем в поданный утилите файл. При этом, если исходный код уже был работоспособным, то выведем соответствующее сообщение и изменять файл не будем.
 \end{enumerate}
 
-\subsection{Другие способы решения}
+\section{Другие способы решения}
 Для решения данной задачи можно предложить и другие способы.
 \begin{enumerate}
 \item Установить расширение для компилятора \textit{Deriving Functor}, которое позволяет генерировать экземпляр класса Functor автоматически с помощью ключевого слова \lstinline{deriving}. Однако проблема с экземплярами класса \textit{Applicative} остаётся открытой, кроме того, код программ всё равно придётся править вручную, что непрактично в случае больших объёмов исходного кода. 
 \item Написать скрипт, который анализирует текст программы на языке Haskell, используя средства для работы со строками. Данный скрипт должен находить ключевые слова \lstinline{instance Monad}~, а затем дописывать в нужном месте необходимые определения экземпляров других классов. Такой способ также имеет недостатки, поскольку слишком сложно учесть все особенности двумерного синтаксиса языка \textit{Haskell} для того, чтобы на выходе получить работающий код. Кроме этого, сложность представляет проверка наличия уже описанных экземпляров, особенно в случае объёмных проектов, содержащих большое число модулей.
 \end{enumerate}
 
-\section{Программная реализация решения}
+\chapter{Обзор программной реализации}
 Программный код разбит на несколько модулей.
 \begin{description}
     \item[MyParser.hs:] содержит функции, проводящие синтаксический разбор модулей и строк.
@@ -371,16 +371,15 @@ instance Applicative MyData
     \item[FixingMonad.hs:] здесь находится код основной программы (\textit{main}).
     С кодом программы можно ознакомиться в репозитории с исходными кодами~\autocite{github}.
 \end{description}
-\subsection{Получение синтаксического дерева}
-Для получения синтаксического дерева опишем функцию \lstinline{parseHaskell}(см. рис.~\ref{parser}), принимающую имя файла и возвращающую объект типа данных \textit{HsModule}. Воспользуемся функциями синтаксического разбора из модуля \textit{Parser} (см. главу~\ref{ghcapi}), а именно функцией \textit{parseModule}. Инициализируем состояние парсера (\textit{PState}) при помощи функции \lstinline{mkPState}. Её аргументы:
+\section{Получение синтаксического дерева}
+Для получения синтаксического дерева опишем функцию \lstinline{parseHaskell}(см. листинг~\ref{parser}), принимающую имя файла и возвращающую объект типа данных \textit{HsModule}. Воспользуемся функциями синтаксического разбора из модуля \textit{Parser} (см. главу~\ref{ghcapi}), а именно функцией \textit{parseModule}. Инициализируем состояние парсера (\textit{PState}) при помощи функции \lstinline{mkPState}. Её аргументы:
 \begin{enumerate}[1)]
 \item \lstinline{dynFl}: динамические флаги (см. главу~\ref{ghcapi});
 \item \lstinline{sbuf}: строка, подвергнутая синтаксическому разбору (в данном случае модуль с исходным кодом целиком);
 \item \lstinline{srcloc}: расположение в файле (поскольку файл подвергается синтаксическому разбору целиком, то расположение~--- это сам файл).
 \end{enumerate}
 
-\begin{figure}[H]
-\hrulefill
+\begin{ListingEnv}[H]
 \begin{lstlisting}
 parseHaskell :: FilePath -> IO (Maybe (HsModule RdrName))
 parseHaskell file = do
@@ -392,23 +391,21 @@ parseHaskell file = do
         POk _ (L _ mdl) -> Just mdl
         PFailed _ _     -> Nothing
 \end{lstlisting}
-\hrulefill
 \caption{Функция parseHaskell}\label{parser}
-\end{figure}
+\end{ListingEnv}
 %$
-\subsection{Фильтр экземпляров класса Monad}
+\section{Фильтр экземпляров класса Monad}
 Следуя алгоритму, описанному в главе~\ref{filtermonad}, опишем следующие функции.
 \begin{enumerate}
-\item Функция \lstinline{getHsDecls} (см. рис.~\ref{p1}) выбирает только ветвь с объявлениями.
-\item Функция \lstinline{getInstDecls} (см. рис.~\ref{p2}) фильтрует только те объявления, которые являются объявлениями экземпляров. Предикат \lstinline{isInstDecl} проверяет, действительно ли очередное объявление описывает экземпляр. Вспомогательная функция \lstinline{getOneInstDecl} <<достаёт>> отдельно взятое объявление из конструктора.
-\item Функция \lstinline{getClsInstDecl} (см рис.~\ref{p3}) отбирает только определения экземпляров классов при помощи предиката \lstinline{isClsInstDecl}, который устанавливает, является ли данный экземпляр экземпляром класса типов.
-\item Функция \lstinline{getInstsMonad} (см рис.~\ref{p4}) фильтрует экземпляры класса \textit{Monad} при помощи соответствующего предиката \lstinline{isInstanceMonad}.
+\item Функция \lstinline{getHsDecls} (см. листинг~\ref{p1}) выбирает только ветвь с объявлениями.
+\item Функция \lstinline{getInstDecls} (см. листинг~\ref{p2}) фильтрует только те объявления, которые являются объявлениями экземпляров. Предикат \lstinline{isInstDecl} проверяет, действительно ли очередное объявление описывает экземпляр. Вспомогательная функция \lstinline{getOneInstDecl} <<достаёт>> отдельно взятое объявление из конструктора.
+\item Функция \lstinline{getClsInstDecl} (см листинг~\ref{p3}) отбирает только определения экземпляров классов при помощи предиката \lstinline{isClsInstDecl}, который устанавливает, является ли данный экземпляр экземпляром класса типов.
+\item Функция \lstinline{getInstsMonad} (см листинг~\ref{p4}) фильтрует экземпляры класса \textit{Monad} при помощи соответствующего предиката \lstinline{isInstanceMonad}.
 \item Получение экземпляров \textit{Functor} и \textit{Applicative} происходит абсолютно аналогично.
-\item Функция \lstinline{filterAloneInstMon} (см. рис.~\ref{p6}) принимает список экземпляров класса \textit{Monad} и \textit{Applicative} либо \textit{Functor}. С помощью предиката \lstinline{hasntApprInst} проверяется, есть ли у текущего экземпляра класса \textit{Monad} соответствующий ему экземпляр класса \textit{Applicative} (либо \textit{Functor}).
+\item Функция \lstinline{filterAloneInstMon} (см. листинг~\ref{p6}) принимает список экземпляров класса \textit{Monad} и \textit{Applicative} либо \textit{Functor}. С помощью предиката \lstinline{hasntApprInst} проверяется, есть ли у текущего экземпляра класса \textit{Monad} соответствующий ему экземпляр класса \textit{Applicative} (либо \textit{Functor}).
 \end{enumerate}
 
-\begin{figure}[h]
-\hrulefill
+\begin{ListingEnv}[h]
 \begin{lstlisting}
 getHsDecls :: IO (Maybe [LHsDecl RdrName]) 
                             -> IO (Maybe [HsDecl RdrName])
@@ -418,12 +415,10 @@ getHsDecls md = do
         Nothing  -> return Nothing
         Just mdl -> return $ Just (map unLoc $ hsmodDecls mdl)
 \end{lstlisting}
-\hrulefill
 \caption{Выбор всех объявлений, описанные в модуле}\label{p1}
-\end{figure}
+\end{ListingEnv}
 
-\begin{figure}[h]
-\hrulefill
+\begin{ListingEnv}[h]
 \begin{lstlisting}
 isInstDecl :: HsDecl RdrName -> Bool
 isInstDecl (InstD _) = True
@@ -441,12 +436,10 @@ getInstDecls md = do
         Just mdl -> return $ Just (map getOneInstDecl
                                 $ filter isInstDecl mdl)
 \end{lstlisting}
-\hrulefill
 \caption{Выбор всех объявлений экземпляров, описанные в модуле}\label{p2}
-\end{figure}
+\end{ListingEnv}
 
-\begin{figure}[h]
-\hrulefill
+\begin{ListingEnv}[h]
 \begin{lstlisting}
 isClsInstDecl :: InstDecl RdrName -> Bool
 isClsInstDecl (ClsInstD _ ) = True
@@ -461,12 +454,10 @@ getClsInstDecl md = do
         Just mdl -> return $ Just (map cid_inst 
                                     $ filter isClsInstDecl mdl)
 \end{lstlisting}
-\hrulefill
 \caption{Выбор всех объявлений экземпляров классов типов, описанные в модуле}\label{p3}
-\end{figure}
+\end{ListingEnv}
 
-\begin{figure}[h]
-\hrulefill
+\begin{ListingEnv}[h]
 \begin{lstlisting}
 isInstanceMonad :: ClsInstDecl RdrName -> Bool
 isInstanceMonad instD = 
@@ -480,13 +471,11 @@ getInstsMonad md = do
         Nothing  -> return Nothing
         Just mdl -> return $ Just (filter isInstanceMonad mdl)
 \end{lstlisting}
-\hrulefill
 \caption{Выбор всех объявлений экземпляров класса Monad}\label{p4}
-\end{figure}
+\end{ListingEnv}
 %$
 
-\begin{figure}[htb]
-\hrulefill
+\begin{ListingEnv}[htb]
 \begin{lstlisting}
 hasntApprInst :: [ClsInstDecl RdrName] -> ClsInstDecl RdrName
                                        -> Bool
@@ -503,17 +492,15 @@ filterAloneInstMon mpap md =
         Just mdl -> Just (filter 
                        (hasntApprInst (unMaybeList mpap)) mdl)
 \end{lstlisting}
-\hrulefill
 \caption{Выбор всех объявлений экземпляров класса Monad, у которых отсутствуют соответствующие им экземпляры классов Applicative и/или Functor}\label{p6}
-\end{figure}
+\end{ListingEnv}
 %$
-\subsection{Генерация экземпляров классов Applicative и
+\section{Генерация экземпляров классов Applicative и
 Functor}
-\subsubsection{Импорт модулей}
-Если интересующие нас модули оказались не подключены, то необходимо сформировать соответствующие импорты (объекты типа данных \textit{ImportDecl}). Определим функцию \lstinline{mkImport}(см. рис.~\ref{imp}), которая принимает строку (название модуля) и возвращает объект типа данных \textit{ImportDecl}. Объект создаётся путём заполнения полей соответствующего конструктора. Поскольку мы формируем простейший импорт модуля вида <<\lstinline{import ModuleName}>>, то все поля (кроме имени модуля) заполним константами, выражающими отсутствие значения.
+\subsection{Импорт модулей}
+Если интересующие нас модули оказались не подключены, то необходимо сформировать соответствующие импорты (объекты типа данных \textit{ImportDecl}). Определим функцию \lstinline{mkImport}(см. листинг~\ref{imp}), которая принимает строку (название модуля) и возвращает объект типа данных \textit{ImportDecl}. Объект создаётся путём заполнения полей соответствующего конструктора. Поскольку мы формируем простейший импорт модуля вида <<\lstinline{import ModuleName}>>, то все поля (кроме имени модуля) заполним константами, выражающими отсутствие значения.
 
-\begin{figure}[h]
-\hrulefill
+\begin{ListingEnv}[h]
 \begin{lstlisting}
 mkImport :: String -> LImportDecl RdrName
 mkImport module = 
@@ -528,20 +515,18 @@ mkImport module =
                                 , ideclAs        = Nothing
                                 , ideclHiding    = Nothing }
 \end{lstlisting}
-\hrulefill
 \caption{Формирование узла с импортом модуля}\label{imp}
-\end{figure}
+\end{ListingEnv}
 
-\subsubsection{Генерация экземпляров}
-Для начала опишем общую функцию \lstinline{mkInstance} (см. рис.~\ref{mkinst}), которая принимает заголовок экземпляра, функции, определённые в экземпляре, и возвращает объект типа данных \textit{ClsInstDecl}.
+\subsection{Генерация экземпляров}
+Для начала опишем общую функцию \lstinline{mkInstance} (см. листинг~\ref{mkinst}), которая принимает заголовок экземпляра, функции, определённые в экземпляре, и возвращает объект типа данных \textit{ClsInstDecl}.
 Затем определим функции, которые по правилам, описанным в главе~\ref{instgen}, составляют список \lstinline{cid_binds}.
 \begin{description}
-\item[Экземпляр класса Applicative.] Для экземпляра класса \textit{Applicative} определим функцию \lstinline{mkCIDBindsForInstAppl} (см. рис.~\ref{cidbindsappl}), которая работает следующим образом. Она принимает два аргумента: определения функций \lstinline{return} и \lstinline{>>} из класса \textit{Monad}. Если реализация одной или обеих функций в экземпляре класса \textit{Monad} отсутствует, то соответствующая фукнция в классе \textit{Applicative} также не появится.
-\item[Экземпляр класса Functor.] Для данного экземпляра зададим функцию \lstinline{mkCIDBindsForInstFunc} (см. рис.~\ref{cidbindsfunc}). Он не зависит от экземпляра класса \textit{Monad}, поэтому \lstinline{cid_binds} формируются всегда одним и тем же образом.
+\item[Экземпляр класса Applicative.] Для экземпляра класса \textit{Applicative} определим функцию \lstinline{mkCIDBindsForInstAppl} (см. листинг~\ref{cidbindsappl}), которая работает следующим образом. Она принимает два аргумента: определения функций \lstinline{return} и \lstinline{>>} из класса \textit{Monad}. Если реализация одной или обеих функций в экземпляре класса \textit{Monad} отсутствует, то соответствующая фукнция в классе \textit{Applicative} также не появится.
+\item[Экземпляр класса Functor.] Для данного экземпляра зададим функцию \lstinline{mkCIDBindsForInstFunc} (см. листинг~\ref{cidbindsfunc}). Он не зависит от экземпляра класса \textit{Monad}, поэтому \lstinline{cid_binds} формируются всегда одним и тем же образом.
 \end{description}
 
-\begin{figure}[h]
-\hrulefill
+\begin{ListingEnv}[h]
 \begin{lstlisting}
 mkInstance :: LHsType RdrName -> LHsBinds RdrName
                                   -> ClsInstDecl RdrName
@@ -554,18 +539,17 @@ mkInstance insthead funs = ClsInstDecl {
                             , cid_overlap_mode  = Nothing
                                }
 \end{lstlisting}
-\hrulefill
 \caption{Формирование узла с экземпляром}\label{mkinst}
-\end{figure}
+\end{ListingEnv}
 
-\subsection{Формирование выходного файла}
+\section{Формирование выходного файла}
 Сформировав новое синтаксическое дерево, применим к нему функцию структурной печати \lstinline{ppr}, которая находится в модуле \textit{Outputable} библиотеки GHC API (см. главу~\ref{ghcapi}). Данная функция принимает объект, тип данных которого имеет экземпляр класса \textit{Outputable} и возвращает объект типа данных \textit{SDoc}. Последний, в свою очередь, преобразовывается к строке с помощью специальных функций, например, \textit{showSDoc}, \textit{showSDocUnsafe} и других.
 
-Опишем основную функцию (\lstinline{main}) (см. рис.~\ref{main}). Она работает следующим образом: принимает имя файла в качестве аргумента командной строки, проводит его синтаксический анализ, применяет к нему функцию \lstinline{appendAllInstances} (является композицией вышеописанных функций), затем печатает в результат в этот же файл.
+Опишем основную функцию (\lstinline{main}) (см. листинг~\ref{main}). Она работает следующим образом: принимает имя файла в качестве аргумента командной строки, проводит его синтаксический анализ, применяет к нему функцию \lstinline{appendAllInstances} (является композицией вышеописанных функций), затем печатает в результат в этот же файл.
 
 
 \newpage
-\section{Результаты работы программы}
+\chapter{Результаты работы программы}
 Подадим на вход утилите тестовый файл \textit{Test.hs} и проанализируем результаты. Данный файл содержит несколько примеров экземпляра класса \textit{Monad}.
 
 Рассмотрим первый пример: <<пустой>> экземпляр класса \textit{Monad}, т.~е. содержащий только заголовок.
@@ -673,8 +657,7 @@ instance Monad Prob where
 \item изменения не затронули код, не относящийся к проблеме.
 \end{enumerate}
 
-\begin{figure}
-\hrulefill
+\begin{ListingEnv}
 \begin{lstlisting}
 mkCIDBindsForInstAppl :: [HsBindLR RdrName RdrName]
                 -> [HsBindLR RdrName RdrName] -> LHsBinds RdrName
@@ -698,25 +681,21 @@ mkCIDBindsForInstAppl monret mongr = listToBag
                          ([mkLMatch [] $ mkGRHSs "ap"]))
            , noLoc (mkFunBindForAppl "*>" (head mongr) True) ]
 \end{lstlisting}
-\hrulefill
 \caption{Формирование поля cid\_binds для Applicative}\label{cidbindsappl}
-\end{figure}
+\end{ListingEnv}
 
-\begin{figure}
-\hrulefill
+\begin{ListingEnv}
 \begin{lstlisting}
 mkCIDBindsForInstFunc :: LHsBinds RdrName
 mkCIDBindsForInstFunc = listToBag
     [ noLoc (mkFunBind (mkFunId "fmap") 
                           ([mkLMatch [] $ mkGRHSs "liftM"])) ]
 \end{lstlisting}
-\hrulefill
 \caption{Формирование поля cid\_binds для Functor}\label{cidbindsfunc}
-\end{figure}
+\end{ListingEnv}
 %$
 
-\begin{figure}
-\hrulefill
+\begin{ListingEnv}
 \begin{lstlisting}
 main :: IO ()
 main = do
@@ -728,30 +707,29 @@ main = do
         Just mdl -> writeFile "a.hs" 
                 $ showSDocUnsafe $ ppr mdl
 \end{lstlisting}
-\hrulefill
 \caption{Основная функция (main)}\label{main}
-\end{figure}
+\end{ListingEnv}
 %$
 
 \Conc
 В ходе работы над задачей было получено решение с применением библиотеки GHC API~--- программного интерфейса компилятора. Проанализировав результаты, можно прийти к следующим выводам.
-\subsection*{Достоинства}
+\section*{Достоинства}
 С помощью данного способа решения решается проблема обратной совместимости версий GHC младше, чем 7.10 и GHC 7.10. Поскольку были использованы стандартные функции библиотеки, которые учитывают все особенности двумерного синтаксиса языка \textit{Haskell}, на выходе получается код, который гарантированно скомпилируется.
-\subsection*{Недостатки}
+\section*{Недостатки}
 Однако у данного подхода имеются и недостатки.
 \begin{enumerate}
 \item Если в исходном файле присутствовали комментарии, то в выходном файле они не сохраняются, поскольку игнорируются при синтаксическом анализе. Однако данная утилита была создана в помощь программистам, которые хотят воспользоваться какими-либо сторонними библиотеками, то есть отсутствие комментариев в этом случае не так важно.
-\item Гораздо более существенным недостатком является то, что конструкции \lstinline{case ... of} на выходе получаются синтаксически неверными, а именно, между вариантами отсутствует точка с запятой (см. рис.~\ref{error}). Это связано с наличием ошибки в исходном коде самого компилятора: функции структурной печати (\textit{pretty printing}), описанные в GHC API, используют вариант конструкции с фигурными скобками, который предполагает наличие точек с запятой, однако они не добавляются. Тем не менее, эта проблема в данный момент решается: нами инициирован процесс добавления соответствующих изменений в общедоступный код компилятора GHC.
+\item Гораздо более существенным недостатком является то, что конструкции \lstinline{case ... of} на выходе получаются синтаксически неверными, а именно, между вариантами отсутствует точка с запятой (см. листинг~\ref{error}). Это связано с наличием ошибки в исходном коде самого компилятора: функции структурной печати (\textit{pretty printing}), описанные в GHC API, используют вариант конструкции с фигурными скобками, который предполагает наличие точек с запятой, однако они не добавляются. Тем не менее, эта проблема в данный момент решается: нами инициирован процесс добавления соответствующих изменений в общедоступный код компилятора GHC.
 \end{enumerate}
 
-\begin{figure}[h]
+\begin{ListingEnv}[h]
     \begin{lstlisting}
 f mp = case mp of {
            Nothing -> 1 -- missing ;
            Just _ -> 2 }
     \end{lstlisting}
 \caption{Синтаксическая ошибка}\label{error}
-\end{figure}
+\end{ListingEnv}
 
 % Печать списка литературы (библиографии)
 \printbibliography[%{}
