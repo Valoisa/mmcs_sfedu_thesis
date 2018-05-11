@@ -105,7 +105,7 @@
 \label{decconstr}
 \end{table}
 	% Библиотека для метапрограммирования на языке Haskell. Предоставляет возможность генерировать код на языке Haskell с помощью специальных типов данных, затем возвращать его строковое представление с помощью функций структурной печати (\textit{pretty-printing}). Не гарантирует, что сгенерированный таким образом код пройдёт проверку системы типов. Однако будем предполагать, что такую гарантию нам даёт наш собственный алгоритм выведения типов.
-	\subsection{GHC API~--- программный интерфейс компилятора} Функционал GHC может быть использован не только для компиляции программ на языке Haskell. Важным примером использования может послужить анализ и, возможно, преобразование кода на языке Haskell. Другим примером является динамическая загрузка кода, как	в GHCi [4]. Для этих целей функционал GHC доступен через библиотеку GHC API.
+	\subsection{GHC API~--- программный интерфейс компилятора}\label{ghcapisec} Функционал GHC может быть использован не только для компиляции программ на языке Haskell. Важным примером использования может послужить анализ и, возможно, преобразование кода на языке Haskell. Другим примером является динамическая загрузка кода, как	в GHCi [4]. Для этих целей функционал GHC доступен через библиотеку GHC API.
 	
 	Рассмотрим некоторые модули этой библиотеки, функционал которых применялся в данной работе.
 	\begin{description}
@@ -130,12 +130,96 @@
 
 \section{Решение и детали реализации решения}
 	\subsection{Создание GHC-контекста}
-		Для начала создадим GHC-контекст, куда поместим определения из стандартных модулей. Для этого определим функцию \lstinline!mkModuleImport!, которая принимает строку, а возвращает \lstinline!InteractiveImport!~--- тип данных, описывающий подключение модуля [ссылка на листинг]. Предусмотрим ситуацию конфликта имён функций, то есть в разных модулях имеются определения функций с одинаковыми именами. Добавим для этого возможность не импортировать определённые функции из модуля, если они не потребуются.
+		Для начала создадим GHC-контекст, куда поместим определения из стандартных модулей. Для этого определим функцию \lstinline!mkModuleImport!, которая принимает строку, а возвращает \lstinline!InteractiveImport!~--- тип данных, описывающий подключение модуля (см. листинг \ref{mkmod}). Предусмотрим ситуацию конфликта имён функций, то есть когда в разных модулях имеются определения функций с одинаковыми именами. Добавим для этого возможность не импортировать определённые функции из модуля, если они не потребуются. Итак, если строка-параметр состоит только из имени модуля, тогда создаём простой импорт модуля (соответствует объявлению \lstinline!import ModuleName!) с помощью функции \lstinline!simpleImportDecl!. В противном случае создаём объявление импорта модуля вида \lstinline!import ModuleName hiding (name1, name2, ...)!, то есть в котором указано, объекты с какими именами импортировать не нужно (это могут быть функции, типы данных, классы типов и т. д.).
+		
+		Непосредственно созданием контекста занимается функция \lstinline!createContext! (см. листинг \ref{crcont}). Эта функция принимает список строк (имена стандартных модулей) и возвращает монаду Ghc (см. гл. \ref{ghcapisec}). Здесь мы устанавливаем флаги для текущей сессии компиляции:
+		\begin{enumerate}[1)]
+			\item \lstinline!hscTarget!~--- тип кода, который будет являться результатом компиляции, в нашем случае это байткод;
+			\item \lstinline!ghcLink!~--- что требуется сделать на этапе компоновки; здесь будем использовать компоновщик, отправляющий код сразу в память, без записи на диск.
+		\end{enumerate}
+	
+		Затем мы подключаем стандартные модули и помещаем все имена из них в созданный контекст с помощью функции \lstinline!getnamesInScope!. Базовый GHC-контекст создан.
+		
+		\begin{ListingEnv}[h]
+		\begin{lstlisting}
+mkModuleImport :: String -> InteractiveImport
+mkModuleImport mod_info = 
+	let info = splitOn " " mod_info
+ 	in case (length info) of
+		1 -> IIDecl $ simpleImportDecl 
+			    $ mkModuleName mod_info
+		_ -> let simple_import = simpleImportDecl 
+			    $ mkModuleName (head info)
+			 string_names  = tail info
+                         names         = map (noLoc . IEVar . noLoc . mkRdrUnqual .mkVarOcc) string_names
+                     in IIDecl 
+              $ ImportDecl { 
+              ideclSourceSrc = ideclSourceSrc simple_import
+            , ideclName      = ideclName simple_import
+	    , ideclPkgQual   = ideclPkgQual simple_import
+	    , ideclSource    = ideclSource simple_import
+	    , ideclSafe      = ideclSafe simple_import
+	    , ideclQualified = ideclQualified simple_import
+	    , ideclImplicit  = ideclImplicit simple_import
+	    , ideclAs        = ideclAs simple_import
+	    , ideclHiding    = Just (False, noLoc names) 
+	  }
+		\end{lstlisting}
+		\caption{Реализация функции mkModuleImport} \label{mkmod}
+		\end{ListingEnv}
+	
+		\begin{ListingEnv}[h]
+		\begin{lstlisting}
+createContext :: [String] -> Ghc [Name]
+createContext stmods = do
+		dflags <- getSessionDynFlags
+		setSessionDynFlags 
+			$ dflags { hscTarget = HscInterpreted
+			         , ghcLink   = LinkInMemory }
+		setContext (map mkModuleImport stmods)
+		getNamesInScope
+		\end{lstlisting}
+		\caption{Реализация функции createContext} \label{crcont}
+		\end{ListingEnv}
+		
 	\subsection{Генерация кода}
-		\subsubsection{Определение типа данных Expression}
+		\subsubsection{Определения новых типов данных}
+		Нам понадобится промежуточное представление для синтаксического дерева программы. Именно в таком виде сторона Haskell будет получать данные для кодогенерации со стороны C++. Определим тип данных \textit{Expression} (см. листинг \ref{expdata}). У этого типа данных несколько конструкторов:
+		\begin{enumerate}[1)]
+			\item \lstinline!Param!, описывает параметр функции в её теле;
+			\item \lstinline!Literal!, описывает числовой, символьный или логический литералы;
+			\item \lstinline!Call!, описывает применение функции (стандартной или определённой пользователем), сюда также относятся конструкторы списка и кортежа;
+			\item \lstinline!PartApply!, описывает вызов частично применённой функции.			
+		\end{enumerate}
+		
+		Введём также вспомогательные типы данных: \textit{BinaryOp} для бинарных операций, \textit{UnaryOp} для унарных операций, \textit{HsType} для встроенных типов данных.
+		
+		\begin{ListingEnv}[h]
+		\begin{lstlisting}[language=Haskell]
+data Expression = Param String
+	        | Literal HsType String
+                | Call CallInfo HsType [Expression]
+                | PartApply [Expression] Expression
+                | Empty
+deriving (Read, Show, Eq)	
+	
+data CallInfo = BuiltIn String | Custom String | Binary BinaryOp | Unary UnaryOp
+deriving (Read, Show, Eq)
+		\end{lstlisting}
+		\caption{Определение типа данных Expression}\label{expdata}
+		\end{ListingEnv}
+		
 		\subsubsection{Непосредственно кодогенерация}
 	\subsection{Взаимодействие между кодами на языках C++ и Haskell}
-\section{Результаты работы кодогенератора}
+\section{Пример работы кодогенератора}
+Для демонстрации работы кодогенератора поступим следующим образом. Изобразим в IDE визуального языка программу. Для неё вручную напишем соответствующий ей код на языке Haskell, чтобы затем сравнить его с кодом, который даст кодогенератор. После скомпилируем и выполним обе программы и сравним результаты.
+
+Изобразим программу вычисления длины списка рекурсивным образом (см. рис. \ref{lengthrec}).
+\begin{figure}[p]
+\centering
+\includegraphics[width=\textwidth]{img/length.PNG}
+\caption{Реализация функции, вычисляющей длину списка, и её применение}\label{lengthrec}	
+\end{figure}
 
 \chapter{Тестирование}
 \section{Тест <<Переприсоединение>>}
