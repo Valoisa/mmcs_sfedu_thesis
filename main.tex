@@ -214,12 +214,114 @@ deriving (Read, Show, Eq)
 \section{Пример работы кодогенератора}
 Для демонстрации работы кодогенератора поступим следующим образом. Изобразим в IDE визуального языка программу. Для неё вручную напишем соответствующий ей код на языке Haskell, чтобы затем сравнить его с кодом, который даст кодогенератор. После скомпилируем и выполним обе программы и сравним результаты.
 
-Изобразим программу вычисления длины списка рекурсивным образом (см. рис. \ref{lengthrec}).
+Изобразим программу вычисления длины целочисленного списка рекурсивным образом (см. рис. \ref{lengthrec}). Затем напишем код, который соответствует изображённому нами синтаксическому дереву (см. табл. \ref{expectreal}, левая колонка). 
+
+Теперь получим промежуточное представление синтаксического дерева (см. листинг \ref{intermed}). Из промежуточного представления видно, что имеется две функции: основная функция, вычисляющая длину конкретного списка с помощью функции, определённой пользователем, и собственно функция вычисления длины списка, определённая пользователем. Основная функция не имеет аргументов и вложенных функций. Функция вычисления длины целочисленного списка имеет один аргумент (собственно список) и также не имеет вложенных функций. Это полностью отвечает тому, что мы изобразили в IDE.
+
+Получаем код, который создаёт кодогенератор (см. табл. \ref{expectreal}, правая колонка). Видно, что он абсолютно идентичен коду, который был написан вручную: различаются только имена функций и их аргументов, порядок функций в программе.
+
+Наконец, исполним функции с названием \lstinline!root! из обеих колонок табл. \ref{expectreal} и сравним результаты их вычислений. Результаты вычислений представлены в таблице \ref{exprealres}. Вычисление обеих функций дало одинаковый результат.
+
 \begin{figure}[p]
 \centering
 \includegraphics[width=\textwidth]{img/length.PNG}
-\caption{Реализация функции, вычисляющей длину списка, и её применение}\label{lengthrec}	
+\caption{Реализация функции, вычисляющей длину списка, и её применение} \label{lengthrec}	
 \end{figure}
+
+\begin{ListingEnv}[h]
+\begin{lstlisting}
+FunctionDef {
+    fun_name = "root"
+  , args = []
+  , result = HsInt
+  , body = Call (Custom "function1") (HsInt) 
+          [Call (BuiltIn "list") (HsList (HsInt)) 
+          [Literal HsInt "0"
+         , Literal HsInt "1"
+         , Literal HsInt "2"
+         , Literal HsInt "3"
+         , Literal HsInt "4"
+         , Literal HsInt "5"
+         , Literal HsInt "6"]]
+  , nested_funs = []
+ }
+ 
+FunctionDef {
+    fun_name = "function1"
+  , args = [FunctionArg {
+              arg_name = "function1_arg0"
+            , arg_type = HsList (HsInt)}]
+  , result = HsInt
+  , body = Call (BuiltIn "if") (HsInt) 
+          [Call (BuiltIn "null") (HsBool) 
+          [Param "function1_arg0"]
+        , Literal HsInt "0"
+        , Call (Binary Add) (HsInt) 
+          [Call (Custom "function1") (HsInt) 
+          [Call (BuiltIn "tail") (HsList (HsInt)) 
+          [Param "function1_arg0"]]
+        , Literal HsInt "1"]]
+  , nested_funs = []
+ }
+\end{lstlisting}
+\caption{Промежуточное представление программы}\label{intermed}
+\end{ListingEnv}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+Код, написанный программистом &
+Сгенерированный код \\
+\hline
+\begin{lstlisting}
+length_rec :: [Int] -> Int
+length_rec xs = 
+ if null xs
+  then 0
+  else length_rec (tail xs) + 1
+
+root :: Int
+root = 
+ length_rec [0, 1, 2, 3, 4, 5, 6]
+\end{lstlisting} &
+\begin{lstlisting}
+root :: Int
+root = 
+ function1 [0, 1, 2, 3, 4, 5, 6]
+
+function1 :: [Int] -> Int
+function1 function1_arg0 = 
+ if null function1_arg0
+  then 0
+  else 
+   function1 (tail function1_arg0)
+     + 1
+\end{lstlisting} \\
+\hline
+\end{tabular}
+\caption{Сравнение ожидаемого и сгенерированного кода}\label{expectreal}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+Ожидаемые результаты & Полученные результаты \\
+\hline
+ & \\
+\begin{minipage}{2in}
+	\begin{verbatim}
+*Main> root
+7
+	\end{verbatim}
+\end{minipage} &
+~~~~~~~\includegraphics{img/result.PNG} \\
+ & \\
+\hline
+\end{tabular}
+\caption{Сравнение результатов вычислений ожидаемой и сгенерированной функции}\label{exprealres}
+\end{table}
 
 \chapter{Тестирование}
 \section{Тест <<Переприсоединение>>}
